@@ -5,55 +5,47 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
+import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
 import com.skillacademy.sabegin.R
 import com.skillacademy.sabegin.data.Result
+import com.skillacademy.sabegin.databinding.ActivityHomeBinding
 import dagger.android.support.DaggerAppCompatActivity
 import javax.inject.Inject
 
-  class HomeActivity : DaggerAppCompatActivity(), HomeView {
+  class HomeActivity : DaggerAppCompatActivity(), HomeViewModelCallback {
 
       @Inject
-      lateinit var presenter: HomePresenter
+      lateinit var viewModel: HomeViewModel
 
-      private lateinit var progressBar: ProgressBar
-      private lateinit var recyclerView: RecyclerView
+      private lateinit var binding:ActivityHomeBinding
 
       override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_home)
 
-        progressBar = findViewById(R.id.pb_home)
-        recyclerView = findViewById(R.id.rv_home)
+          binding = DataBindingUtil.setContentView<ActivityHomeBinding>(
+              this,
+              R.layout.activity_home)
+              .apply { viewmodel = this@HomeActivity.viewModel }
+              .also { viewModel.discoverMoview() }
+      }
 
-          //presenter = HomePresenter(this)
-          presenter.discoverMovie()
+      override fun onSuccess(results: List<Result>) {
+
+          binding.rvHome.addItemDecoration(DividerItemDecoration(this@HomeActivity,
+              DividerItemDecoration.VERTICAL))
+          binding.rvHome.adapter = HomeAdapter(results)
+
+      }
+
+      override fun onError(error: Throwable) {
+          Log.e(HomeActivity::class.java.simpleName, "${error.printStackTrace()}")
+
       }
 
       override fun onDestroy() {
           super.onDestroy()
-          presenter.onDetach()
-      }
-
-      override fun showLoading() {
-          progressBar.visibility = View.VISIBLE
-
-      }
-
-      override fun hideLoading() {
-          progressBar.visibility = View.INVISIBLE
-          recyclerView.visibility = View.VISIBLE
-      }
-
-      override fun onResponse(results: List<Result>) {
-          recyclerView.addItemDecoration(DividerItemDecoration(this@HomeActivity, DividerItemDecoration.VERTICAL))
-          recyclerView.adapter = HomeAdapter(results)
-
-      }
-
-      override fun onFailure(error: Throwable) {
-          Log.e(HomeAdapter::class.java.simpleName,"${error.printStackTrace()}")
-
+          viewModel.onDetach()
       }
 }

@@ -1,16 +1,14 @@
 package com.skillacademy.sabegin.di.module
 
 import com.skillacademy.sabegin.data.HomeDatasource
-import com.skillacademy.sabegin.presentation.HomeActivity
-import com.skillacademy.sabegin.presentation.HomePresenter
-import com.skillacademy.sabegin.presentation.HomeView
+import com.skillacademy.sabegin.presentation.*
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import retrofit2.Retrofit
 
 @Module
-abstract class HomeModule {
+abstract class HomeModule{
 
     @Module
     companion object{
@@ -22,12 +20,14 @@ abstract class HomeModule {
 
         @JvmStatic
         @Provides
-        fun providesHomePresenter(
-            view:HomeView,
+        fun providesHomeViewModel(
+            callback: HomeViewModelCallback,
             datasource: HomeDatasource
-        ): HomePresenter = HomePresenter(view, datasource)
+        ):HomeViewModel = HomeViewModel(callback,datasource)
+
     }
 
     @Binds
-    abstract fun bindMovieView(activity: HomeActivity): HomeView
+    abstract fun bindHomeViewModelCallback(activity: HomeActivity): HomeViewModelCallback
+
 }
